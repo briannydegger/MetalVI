@@ -20,3 +20,4 @@ Le but du projet est d'avoir les genres de Metal par zone du monde et d'analyser
 *   [Étude réalisée par Iain](http://www.degeneratestate.org/posts/2016/Apr/20/heavy-metal-and-natural-language-processing-part-1/)
 *   [Map jQuery](https://jqvmap.com/)
 *   [Map jQuery github](https://github.com/manifestinteractive/jqvmap)
+*   [API de population](https://restcountries.eu/)

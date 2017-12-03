@@ -10,6 +10,8 @@
         <script type="text/javascript">
             var apiKey = "?api_key=8f41d549-f1ac-4b35-99bf-e18104922e40";
             var datasByCountry = [];
+            var numberBandsByCountry = [];
+            var populationByCountry = [];
             const topGenre = 3;
             var timeLabelShow = 0;
             $(document).ready(function() {
@@ -21,6 +23,11 @@
                         // Identifiant pour savoir si le label doit être encore modifié
                         timeLabelShow = code;
                         var copyTimeLabelShow = timeLabelShow;
+
+
+
+                        //https://www.metal-archives.com/browse/ajax-country/c/CH/json/1?sEcho=1&iColumns=4&sColumns=&iDisplayStart=0&iDisplayLength=500&mDataProp_0=0&mDataProp_1=1&mDataProp_2=2&mDataProp_3=3&iSortCol_0=0&sSortDir_0=asc&iSortingCols=1&bSortable_0=true&bSortable_1=true&bSortable_2=true&bSortable_3=false&_=1512297782535
+
 
                         if (code in datasByCountry) {
                             if (datasByCountry[code] !== true) {
@@ -58,6 +65,27 @@
                                 },
                             });
                         }
+
+
+
+
+                        if (code in populationByCountry) {
+                            if (populationByCountry[code] !== true) {
+                                showPopulation(label, populationByCountry[code], copyTimeLabelShow);
+                            }
+                        } else {
+                            // Il faut récupérer les données
+                            populationByCountry[code] = true;
+                            $.ajax({
+                                url: "https://restcountries.eu/rest/v2/alpha/" + code,
+                                dataType: "json",
+                                success: function(result) {
+                                    populationByCountry[code] = result.population;
+
+                                    showPopulation(label, populationByCountry[code], copyTimeLabelShow);
+                                },
+                            });
+                        }
                     },
                 });
             });
@@ -72,6 +100,12 @@
                     }
                     ol += "</ol>";
                     label.append(ol);
+                }
+            }
+
+            function showPopulation(label, data, id) {
+                if (id == timeLabelShow) {
+                    label.append("<p>" + data + "</p>");
                 }
             }
 
