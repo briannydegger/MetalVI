@@ -43,7 +43,7 @@ function getAllBands(countryCode, start, countries) {
                     });
                 }
             } catch(e) {
-                console.log(e, countryCode, start);
+                console.log(e, countryCode, start, jsonCountry);
             }
         }
     });
@@ -60,7 +60,7 @@ app.get('/update', function(req, res) {
 
     // On supprime toutes les données en premier lieux
     conMysql.connect(function(err) {
-        var sql = "DELETE FROM bands;";
+        var sql = "DELETE FROM bands; DELETE FROM bands_genres_pivot; DELETE FROM genres;";
         conMysql.query(sql, function (err, result) {
         });
     });
@@ -69,11 +69,29 @@ app.get('/update', function(req, res) {
         if (!error) {
             var $ = cheerio.load(html);
 
+            // Pour chaque lien, on récupère le code du pays
             $('.countryCol a').each(function(i, el) {
                 var href = $(this).attr('href').split('/');
-                var countryCode = href[href.length - 1];
+                var countryCode = href[href.length - 1].toLowerCase();
 
+                // Récupère tous les groupes du pays
                 getAllBands(countryCode, 0, null);
+                // Récupère la population
+                request('https://restcountries.eu/rest/v2/alpha/' + countryCode, function(errorPopulation, responsePopulation, jsonPopulation) {
+                    if (!errorPopulation) {
+                        try {
+                            var data = JSON.parse(jsonPopulation);
+                            conMysql.connect(function(err) {
+                                var sql = "INSERT INTO countries (country, population) VALUES ('" + countryCode + "', " + data.population + ")";
+                                conMysql.query(sql, function (err, result) {
+                                });
+                            });
+                        } catch(e) {
+                            console.log(e, countryCode);
+                        }
+                    }
+                });
+
             })
         }
     });

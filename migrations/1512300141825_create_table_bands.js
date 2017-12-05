@@ -4,6 +4,7 @@ module.exports = {
         name TEXT,\
         link TEXT,\
         country VARCHAR(10),\
+        FOREIGN KEY (country) REFERENCES countries(country),\
         status TEXT,\
         location TEXT,\
         genres TEXT\
