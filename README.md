@@ -13,6 +13,11 @@ Les données utilisées proviennent de l'API [http://em.wemakesites.net/](http:/
 
 Le but du projet est d'avoir les genres de Metal par zone du monde et d'analyser quels pays accueillent le mieux cette musique.
 
+## Notes pour la présentation
+
+Api incomplète. Contacte, mais pas de solution.
+On récupère nous les données. Url ajax dont les paramètre ne peuvent être modifiés.
+Synonyme pour les genres.
 
 ## Liens utiles
 

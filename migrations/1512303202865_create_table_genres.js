@@ -18,5 +18,5 @@ module.exports = {
             ('Symphonic'),\
             ('Thrash')\
     ",
-    "down": "DELETE FROM genres;"
+    "down": "SELECT * FROM genres;"
 }
