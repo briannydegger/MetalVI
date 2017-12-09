@@ -32,29 +32,31 @@ function getAllBands(countryCode, start, countries) {
                     getAllBands(countryCode, start + 500, countries)
                 } else {
                     countries.aaData = countries.aaData.map(a => {
-                        a[4] = a[0].match(/href='([^"]*)'/)[1];
+                        a[4] = a[0].match(/href='([^"]*)'>/)[1];
                         a[0] = a[0].match(/<a[^>]*>([\s\S]*?)<\/a>/)[1];
                         a[3] = a[3].match(/class=\"([^"]*)\"/)[1];
                         a[5] = countryCode;
+                        var idTemp = a[4].split("/");
+                        a[6] = idTemp[idTemp.length - 1];
                         return a;
                     });
 
-                    var genreIds = countries.aaData.map(a => {
-                        var genresTemp = [];
+                    var genreIds = [];
+                    countries.aaData.map(a => {
                         Object.keys(synonyms).forEach(function (index) {
                             var value = synonyms[index];
                             if (value.id > -1) {
                                 for (var i = 0; i < value.words.length; i++) {
                                     if (a[1].toLowerCase().includes(value.words[i])) {
-                                        genresTemp.push(value.id);
+                                        genreIds.push([a[6], value.id]);
                                     }
                                 }
                             }
                         });
-                        return genresTemp;
                     });
 
                     conMysql.connect(function (err) {
+                        /*                      
                         var sqlAll = "";
                         for (var i = 0; i < countries.aaData.length; i++) {
                             var b = countries.aaData[i];
@@ -64,7 +66,7 @@ function getAllBands(countryCode, start, countries) {
                                 if (j < genreIds[i].length - 1)
                                     gids += ", ";
                             }
-                            var sql = 'INSERT INTO bands(name, genres, location, status, link, country) VALUES("' + b[0] + '", "' + b[1] + '", "' + b[2] + '", "' + b[3] + '", "' + b[4] + '", "' + b[5] + '");';
+                            var sql = 'INSERT INTO bands(name, genres, location, status, link, country, id) VALUES("' + b[0] + '", "' + b[1] + '", "' + b[2] + '", "' + b[3] + '", "' + b[4] + '", "' + b[5] + '");';
                             if (gids != "")
                                 sql += " INSERT INTO bands_genres_pivot(band_id, genre_id) VALUES" + gids + ";";
 
@@ -73,6 +75,18 @@ function getAllBands(countryCode, start, countries) {
                         conMysql.query(sqlAll, function (err, result) {
                             console.log(sqlAll, err, result);
                         });
+                        */
+
+                        var sqlBand = 'INSERT INTO bands(name, genres, location, status, link, country, band_id) VALUES ?;';
+                        conMysql.query(sqlBand, [countries.aaData], function (err, result) {
+                            console.log(sqlBand, err, result);
+                        });
+                        if (genreIds.length > 0) {
+                            var sqlGenres = 'INSERT INTO bands_genres_pivot(band_id, genre_id) VALUES ?;';
+                            conMysql.query(sqlGenres, [genreIds], function (err, result) {
+                                console.log(sqlGenres, err, result);
+                            });
+                        }
 
                     });
                 }

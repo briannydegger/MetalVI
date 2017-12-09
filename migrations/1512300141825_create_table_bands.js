@@ -1,6 +1,6 @@
 module.exports = {
     "up": "CREATE TABLE bands (\
-        band_id INT NOT NULL AUTO_INCREMENT, UNIQUE KEY band_id (band_id),\
+        band_id VARCHAR(10) NOT NULL, UNIQUE KEY band_id (band_id),\
         name TEXT,\
         link TEXT,\
         country VARCHAR(10),\
