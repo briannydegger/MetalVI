@@ -16,6 +16,12 @@ var conMysql = mysql.createConnection({
     database: 'hesso_vi'
 });
 
+/**
+ * Récupère tous les groupes par pays, 500 par 500
+ * @param {*} countryCode Code du pays
+ * @param {*} start Numéro des données à récupérer (doit commencer par 0)
+ * @param {*} countries Stocks les groupes
+ */
 function getAllBands(countryCode, start, countries) {
     request('https://www.metal-archives.com/browse/ajax-country/c/' + countryCode + '/json/1?sEcho=1&iColumns=4&sColumns=&iDisplayStart=' + start + '&iDisplayLength=500&mDataProp_0=0&mDataProp_1=1&mDataProp_2=2&mDataProp_3=3&iSortCol_0=0&sSortDir_0=asc&iSortingCols=1&bSortable_0=true&bSortable_1=true&bSortable_2=true&bSortable_3=false&_=1512315355906', function (errorCountry, responseCountry, jsonCountry) {
         if (!errorCountry) {
@@ -29,8 +35,10 @@ function getAllBands(countryCode, start, countries) {
                 }
 
                 if (countries.aaData.length < countries.iTotalRecords) {
+                    // Récursif
                     getAllBands(countryCode, start + 500, countries)
                 } else {
+                    // Parse les infos
                     countries.aaData = countries.aaData.map(a => {
                         a[4] = a[0].match(/href='([^"]*)'>/)[1];
                         a[0] = a[0].match(/<a[^>]*>([\s\S]*?)<\/a>/)[1];
@@ -41,6 +49,7 @@ function getAllBands(countryCode, start, countries) {
                         return a;
                     });
 
+                    // Récupère les id en fonction du genre
                     var genreIds = [];
                     countries.aaData.map(a => {
                         Object.keys(synonyms).forEach(function (index) {
@@ -55,36 +64,16 @@ function getAllBands(countryCode, start, countries) {
                         });
                     });
 
+                    // Enregistre les groupes puis la liaison avec les genres
                     conMysql.connect(function (err) {
-                        /*                      
-                        var sqlAll = "";
-                        for (var i = 0; i < countries.aaData.length; i++) {
-                            var b = countries.aaData[i];
-                            var gids = "";
-                            for (var j = 0; j < genreIds[i].length; j++) {
-                                gids += "(LAST_INSERT_ID(), " + genreIds[i][j] + ")";
-                                if (j < genreIds[i].length - 1)
-                                    gids += ", ";
-                            }
-                            var sql = 'INSERT INTO bands(name, genres, location, status, link, country, id) VALUES("' + b[0] + '", "' + b[1] + '", "' + b[2] + '", "' + b[3] + '", "' + b[4] + '", "' + b[5] + '");';
-                            if (gids != "")
-                                sql += " INSERT INTO bands_genres_pivot(band_id, genre_id) VALUES" + gids + ";";
-
-                            sqlAll += sql;
-                        }
-                        conMysql.query(sqlAll, function (err, result) {
-                            console.log(sqlAll, err, result);
-                        });
-                        */
-
                         var sqlBand = 'INSERT INTO bands(name, genres, location, status, link, country, band_id) VALUES ?;';
                         conMysql.query(sqlBand, [countries.aaData], function (err, result) {
-                            console.log(sqlBand, err, result);
+                            //console.log(sqlBand, err, result);
                         });
                         if (genreIds.length > 0) {
                             var sqlGenres = 'INSERT INTO bands_genres_pivot(band_id, genre_id) VALUES ?;';
                             conMysql.query(sqlGenres, [genreIds], function (err, result) {
-                                console.log(sqlGenres, err, result);
+                                //console.log(sqlGenres, err, result);
                             });
                         }
 
@@ -97,6 +86,9 @@ function getAllBands(countryCode, start, countries) {
     });
 }
 
+/**
+ * Requête pour mettre à jour les données
+ */
 app.get('/update', function (req, res) {
     // Permet l'update toute les heures (évite plusieurs update en même temps)
     if (updating + 3600000 > new Date().getTime()) {
@@ -112,6 +104,7 @@ app.get('/update', function (req, res) {
         conMysql.query(sql, function (err, result) {
         });
 
+        // Récupère les ids des genres
         var sql = "SELECT * FROM genres;";
         conMysql.query(sql, function (err, result) {
             for (var i = 0; i < result.length; i++) {
@@ -120,6 +113,7 @@ app.get('/update', function (req, res) {
         });
     });
 
+    // Récupère la liste des pays
     request('https://www.metal-archives.com/browse/country', function (error, response, html) {
         if (!error) {
             var $ = cheerio.load(html);
@@ -129,8 +123,9 @@ app.get('/update', function (req, res) {
                 var href = $(this).attr('href').split('/');
                 var countryCode = href[href.length - 1].toLowerCase();
 
-                // Récupère tous les groupes du pays
+                // Requêtes pour récupèrer tous les groupes du pays
                 getAllBands(countryCode, 0, null);
+
                 // Récupère la population
                 request('https://restcountries.eu/rest/v2/alpha/' + countryCode, function (errorPopulation, responsePopulation, jsonPopulation) {
                     if (!errorPopulation) {
@@ -158,6 +153,4 @@ app.get('/update', function (req, res) {
 
 app.use(express.static('public'));
 
-app.listen(8081, () => console.log('Example app listening on port 8081!'))
-// metalVI
-// vi2017d
+app.listen(8081, () => console.log('Metal VI app listening on port 8081!'))
