@@ -132,7 +132,7 @@ app.get('/update', function (req, res) {
                         try {
                             var data = JSON.parse(jsonPopulation);
                             conMysql.connect(function (err) {
-                                var sql = "INSERT INTO countries (country, population) VALUES ('" + countryCode + "', " + data.population + ")";
+                                var sql = "INSERT INTO countries (country, population, name) VALUES ('" + countryCode + "', " + data.population + ", '" + data.name + "')";
                                 conMysql.query(sql, function (err, result) {
                                 });
                             });
