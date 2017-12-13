@@ -1,0 +1,125 @@
+<html>
+
+<head>
+    <title>Metal Genre Map</title>
+    <link href="manifestinteractive-jqvmap-780b2c1/dist/jqvmap.css" media="screen" rel="stylesheet" type="text/css">
+
+    <script type="text/javascript" src="http://code.jquery.com/jquery-1.11.3.min.js"></script>
+    <script type="text/javascript" src="manifestinteractive-jqvmap-780b2c1/dist/jquery.vmap.js"></script>
+    <script type="text/javascript" src="manifestinteractive-jqvmap-780b2c1/dist/maps/jquery.vmap.world.js" charset="utf-8"></script>
+
+    <script type="text/javascript">
+        var apiKey = "?api_key=8f41d549-f1ac-4b35-99bf-e18104922e40";
+        var datasByCountry = [];
+        var numberBandsByCountry = [];
+        var populationByCountry = [];
+        const topGenre = 3;
+        var timeLabelShow = 0;
+        $(document).ready(function () {
+            $('#vmap').vectorMap({
+                map: 'world_en',
+                enableZoom: true,
+                showTooltip: true,
+                onLabelShow: function (event, label, code) {
+                    // Identifiant pour savoir si le label doit être encore modifié
+                    timeLabelShow = code;
+                    var copyTimeLabelShow = timeLabelShow;
+
+
+
+                    //https://www.metal-archives.com/browse/ajax-country/c/CH/json/1?sEcho=1&iColumns=4&sColumns=&iDisplayStart=0&iDisplayLength=500&mDataProp_0=0&mDataProp_1=1&mDataProp_2=2&mDataProp_3=3&iSortCol_0=0&sSortDir_0=asc&iSortingCols=1&bSortable_0=true&bSortable_1=true&bSortable_2=true&bSortable_3=false&_=1512297782535
+
+
+                    if (code in datasByCountry) {
+                        if (datasByCountry[code] !== true) {
+                            showTop(label, datasByCountry[code], copyTimeLabelShow);
+                        }
+                    } else {
+                        // Il faut récupérer les données
+                        datasByCountry[code] = true;
+                        $.ajax({
+                            url: "http://em.wemakesites.net/country/" + code + apiKey,
+                            dataType: "json",
+                            success: function (result) {
+                                var values = [];
+                                $.each(result.data.search_results, function (index, band) {
+                                    $.each(band.genres, function (index, genre) {
+                                        if (genre in values) {
+                                            values[genre]++;
+                                        } else {
+                                            values[genre] = 1;
+                                        }
+                                    });
+                                });
+                                // Tri des résultats par nombre de groupe
+                                var sortable = [];
+                                for (var val in values) {
+                                    sortable.push([val, values[val]]);
+                                }
+                                sortable.sort(function (a, b) {
+                                    return b[1] - a[1];
+                                });
+
+                                datasByCountry[code] = sortable;
+
+                                showTop(label, datasByCountry[code], copyTimeLabelShow);
+                            },
+                        });
+                    }
+
+
+
+
+                    if (code in populationByCountry) {
+                        if (populationByCountry[code] !== true) {
+                            showPopulation(label, populationByCountry[code], copyTimeLabelShow);
+                        }
+                    } else {
+                        // Il faut récupérer les données
+                        populationByCountry[code] = true;
+                        $.ajax({
+                            url: "https://restcountries.eu/rest/v2/alpha/" + code,
+                            dataType: "json",
+                            success: function (result) {
+                                populationByCountry[code] = result.population;
+
+                                showPopulation(label, populationByCountry[code], copyTimeLabelShow);
+                            },
+                        });
+                    }
+                },
+            });
+        });
+
+        function showTop(label, data, id) {
+            if (id == timeLabelShow) {
+                var ol = "<ol>";
+                for (var i = 0; i < topGenre; i++) {
+                    if (data[i] && data[i][0]) {
+                        ol += "<li>" + data[i][0] + "</li>";
+                    }
+                }
+                ol += "</ol>";
+                label.append(ol);
+            }
+        }
+
+        function showPopulation(label, data, id) {
+            if (id == timeLabelShow) {
+                label.append("<p>" + data + "</p>");
+            }
+        }
+
+        var bandsByCountry = <%-JSON.stringify(bandsByCountry)%>;
+
+        console.log(bandsByCountry);
+    </script>
+</head>
+
+<body>
+    <h1></h1>
+    <div id="vmap" style="width: 100%; height: 100%;"></div>
+     <%= bandsByCountry %>
+</body>
+
+</html>

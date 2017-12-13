@@ -3,6 +3,7 @@ const express = require('express')
 const app = express()
 var cheerio = require('cheerio');
 var mysql = require('mysql');
+app.set('view engine', 'ejs');
 
 var synonyms = require('./synonyms.js');
 
@@ -132,7 +133,7 @@ app.get('/update', function (req, res) {
                         try {
                             var data = JSON.parse(jsonPopulation);
                             conMysql.connect(function (err) {
-                                var sql = "INSERT INTO countries (country, population, name) VALUES ('" + countryCode + "', " + data.population + ", '" + data.name + "')";
+                                var sql = 'INSERT INTO countries (country, population, name) VALUES ("' + countryCode + '", ' + data.population + ', "' + data.name + '")';
                                 conMysql.query(sql, function (err, result) {
                                 });
                             });
@@ -150,7 +151,43 @@ app.get('/update', function (req, res) {
     res.end();
 })
 
-
 app.use(express.static('public'));
+
+app.get('/', function (req, res) {
+    var bandsByCountry = {};
+    var sql = "CALL getTopGenres();";
+    conMysql.query(sql, function (err, result) {
+        if (!err) {
+            for (i in result[0]) {
+                var row = result[0][i];
+                if (row.country in bandsByCountry) {
+                } else {
+                    bandsByCountry[row.country] = {};
+                    bandsByCountry[row.country].top = [];
+                }
+                bandsByCountry[row.country].top.push({
+                    genre: row.genre,
+                    number: row.number,
+                });
+                bandsByCountry[row.country].name = row.name;
+                bandsByCountry[row.country].population = row.population;
+            }
+            var sqlNumber = "SELECT bands.country, COUNT(*) AS number_bands FROM bands WHERE status = 'active' GROUP BY country;";
+            conMysql.query(sqlNumber, function (errNumber, resultNumber) {
+                if (!errNumber) {
+                    for (i in resultNumber) {
+                        var row = resultNumber[i];
+                        if (row.country in bandsByCountry)
+                            bandsByCountry[row.country].number_bands = row.number_bands;
+                    }
+
+                    res.render('index', {
+                        bandsByCountry: bandsByCountry
+                    });
+                }
+            });
+        }
+    });
+});
 
 app.listen(8081, () => console.log('Metal VI app listening on port 8081!'))
