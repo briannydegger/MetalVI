@@ -2,124 +2,131 @@
 
 <head>
     <title>Metal Genre Map</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+        crossorigin="anonymous">
     <link href="manifestinteractive-jqvmap-780b2c1/dist/jqvmap.css" media="screen" rel="stylesheet" type="text/css">
 
     <script type="text/javascript" src="http://code.jquery.com/jquery-1.11.3.min.js"></script>
     <script type="text/javascript" src="manifestinteractive-jqvmap-780b2c1/dist/jquery.vmap.js"></script>
     <script type="text/javascript" src="manifestinteractive-jqvmap-780b2c1/dist/maps/jquery.vmap.world.js" charset="utf-8"></script>
 
+    <style>
+        body {
+            font-family: 'Alegreya JM', "Times New Roman", Times, serif;
+        }
+
+        ol {
+            padding-left: 20px;
+        }
+
+        *,
+        ::after,
+        ::before {
+            box-sizing: unset !important;
+        }
+
+        .nav {
+            font-size: 14;
+        }
+
+        #titles {
+            position: absolute;
+            z-index: 10;
+            margin-left: 230px;
+            bottom: 20px;
+        }
+
+        .jqvmap-label {
+            min-width: 150px;
+            background-color: white;
+            color: black;
+        }
+
+        .jqvmap-label p {
+
+            text-align: center;
+        }
+    </style>
+
     <script type="text/javascript">
-        var apiKey = "?api_key=8f41d549-f1ac-4b35-99bf-e18104922e40";
-        var datasByCountry = [];
-        var numberBandsByCountry = [];
-        var populationByCountry = [];
+        var bandsByCountry = <%-JSON.stringify(bandsByCountry) %>;
+        var numberBandsByGenre = <%-JSON.stringify(numberBandsByGenre) %>;
+        var colorsByGenre = <%-JSON.stringify(colorsByGenre) %>;
+        var genres = <%-JSON.stringify(genres) %>;
+        console.log(bandsByCountry, numberBandsByGenre, colorsByGenre);
         const topGenre = 3;
-        var timeLabelShow = 0;
+
+        var genre = 'all';
         $(document).ready(function () {
             $('#vmap').vectorMap({
                 map: 'world_en',
                 enableZoom: true,
                 showTooltip: true,
+                color: '#FFFFFF',
+                colors: colorsByGenre[genre],
                 onLabelShow: function (event, label, code) {
-                    // Identifiant pour savoir si le label doit être encore modifié
-                    timeLabelShow = code;
-                    var copyTimeLabelShow = timeLabelShow;
-
-
-
-                    //https://www.metal-archives.com/browse/ajax-country/c/CH/json/1?sEcho=1&iColumns=4&sColumns=&iDisplayStart=0&iDisplayLength=500&mDataProp_0=0&mDataProp_1=1&mDataProp_2=2&mDataProp_3=3&iSortCol_0=0&sSortDir_0=asc&iSortingCols=1&bSortable_0=true&bSortable_1=true&bSortable_2=true&bSortable_3=false&_=1512297782535
-
-
-                    if (code in datasByCountry) {
-                        if (datasByCountry[code] !== true) {
-                            showTop(label, datasByCountry[code], copyTimeLabelShow);
-                        }
-                    } else {
-                        // Il faut récupérer les données
-                        datasByCountry[code] = true;
-                        $.ajax({
-                            url: "http://em.wemakesites.net/country/" + code + apiKey,
-                            dataType: "json",
-                            success: function (result) {
-                                var values = [];
-                                $.each(result.data.search_results, function (index, band) {
-                                    $.each(band.genres, function (index, genre) {
-                                        if (genre in values) {
-                                            values[genre]++;
-                                        } else {
-                                            values[genre] = 1;
-                                        }
-                                    });
-                                });
-                                // Tri des résultats par nombre de groupe
-                                var sortable = [];
-                                for (var val in values) {
-                                    sortable.push([val, values[val]]);
-                                }
-                                sortable.sort(function (a, b) {
-                                    return b[1] - a[1];
-                                });
-
-                                datasByCountry[code] = sortable;
-
-                                showTop(label, datasByCountry[code], copyTimeLabelShow);
-                            },
-                        });
+                    label.append("<hr />");
+                    if (numberBandsByGenre[genre] && numberBandsByGenre[genre][code])
+                        label.append("<p>" + numberBandsByGenre[genre][code] + "</p>");
+                    else {
+                        if (genre == 'all')
+                            label.append("<p>No band</p>");
+                        else
+                            label.append("<p>No band of " + genre + "</p>");
                     }
-
-
-
-
-                    if (code in populationByCountry) {
-                        if (populationByCountry[code] !== true) {
-                            showPopulation(label, populationByCountry[code], copyTimeLabelShow);
+                    var ol = "<ol>";
+                    for (var i = 0; i < topGenre; i++) {
+                        if (bandsByCountry[code] && bandsByCountry[code].top[i]) {
+                            ol += "<li>" + bandsByCountry[code].top[i].genre + "</li>";
                         }
-                    } else {
-                        // Il faut récupérer les données
-                        populationByCountry[code] = true;
-                        $.ajax({
-                            url: "https://restcountries.eu/rest/v2/alpha/" + code,
-                            dataType: "json",
-                            success: function (result) {
-                                populationByCountry[code] = result.population;
-
-                                showPopulation(label, populationByCountry[code], copyTimeLabelShow);
-                            },
-                        });
                     }
+                    ol += "</ol>";
+                    label.append(ol);
                 },
+            });
+
+            for (g in genres) {
+                $(".nav").append('<li class="nav-item"><a class="nav-link" href="#">' + genres[g] + '</a></li>');
+            }
+
+            $(".nav-link").mouseenter(linkMouseenter);
+
+            $(".nav-link").click(function (e) {
+                $(".nav-link").click(linkMouseenter);
+                $(".nav-link").off('mouseenter');
+            });
+
+            $(".flex-column").mouseleave(function () {
+                $(".nav-link").mouseenter(linkMouseenter);
             });
         });
 
-        function showTop(label, data, id) {
-            if (id == timeLabelShow) {
-                var ol = "<ol>";
-                for (var i = 0; i < topGenre; i++) {
-                    if (data[i] && data[i][0]) {
-                        ol += "<li>" + data[i][0] + "</li>";
-                    }
-                }
-                ol += "</ol>";
-                label.append(ol);
-            }
+        function linkMouseenter() {
+            $(".nav-link").removeClass('active');
+            $(this).addClass('active');
+            genre = $(this).html();
+            if (!(genre in colorsByGenre))
+                genre = 'all';
+            $('#vmap').vectorMap('set', 'colors', colorsByGenre[genre]);
         }
-
-        function showPopulation(label, data, id) {
-            if (id == timeLabelShow) {
-                label.append("<p>" + data + "</p>");
-            }
-        }
-
-        var bandsByCountry = <%-JSON.stringify(bandsByCountry)%>;
-
-        console.log(bandsByCountry);
     </script>
 </head>
 
 <body>
-    <h1></h1>
-    <div id="vmap" style="width: 100%; height: 100%;"></div>
-     <%= bandsByCountry %>
+    <ul class="nav flex-column nav-pills" style="width: 250px; position: fixed;">
+        <li>
+            <h1>Metal Genres</h1>
+            <h6>Data by
+                <a href="https://www.metal-archives.com/">metal-archives</a>
+            </h6>
+        </li>
+        <hr />
+        <li class="nav-item">
+            <a class="nav-link active" href="#">Number of Metal band per 1 million people</a>
+        </li>
+    </ul>
+
+    <div id="vmap" style="height: 100%; position: absolute; margin-left: 250px;"></div>
 </body>
 
 </html>

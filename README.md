@@ -18,6 +18,7 @@ Le but du projet est d'avoir les genres de Metal par zone du monde et d'analyser
 Api incomplète. Contacte, mais pas de solution.
 On récupère nous les données. Url ajax dont les paramètre ne peuvent être modifiés.
 Synonyme pour les genres.
+probèlme sj : Svalbard.
 
 ## Liens utiles
 

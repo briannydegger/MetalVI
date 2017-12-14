@@ -6,6 +6,7 @@ var mysql = require('mysql');
 app.set('view engine', 'ejs');
 
 var synonyms = require('./synonyms.js');
+var countriesInMap = require('./countries.js');
 
 var updating = 0;
 
@@ -16,6 +17,11 @@ var conMysql = mysql.createConnection({
     password: 'vi2017',
     database: 'hesso_vi'
 });
+
+function componentToHex(c) {
+    var hex = c.toString(16);
+    return hex.length == 1 ? "0" + hex : hex;
+}
 
 /**
  * Récupère tous les groupes par pays, 500 par 500
@@ -124,25 +130,26 @@ app.get('/update', function (req, res) {
                 var href = $(this).attr('href').split('/');
                 var countryCode = href[href.length - 1].toLowerCase();
 
-                // Requêtes pour récupèrer tous les groupes du pays
-                getAllBands(countryCode, 0, null);
+                if (countriesInMap.indexOf(countryCode) > -1) {
+                    // Requêtes pour récupèrer tous les groupes du pays
+                    getAllBands(countryCode, 0, null);
 
-                // Récupère la population
-                request('https://restcountries.eu/rest/v2/alpha/' + countryCode, function (errorPopulation, responsePopulation, jsonPopulation) {
-                    if (!errorPopulation) {
-                        try {
-                            var data = JSON.parse(jsonPopulation);
-                            conMysql.connect(function (err) {
-                                var sql = 'INSERT INTO countries (country, population, name) VALUES ("' + countryCode + '", ' + data.population + ', "' + data.name + '")';
-                                conMysql.query(sql, function (err, result) {
+                    // Récupère la population
+                    request('https://restcountries.eu/rest/v2/alpha/' + countryCode, function (errorPopulation, responsePopulation, jsonPopulation) {
+                        if (!errorPopulation) {
+                            try {
+                                var data = JSON.parse(jsonPopulation);
+                                conMysql.connect(function (err) {
+                                    var sql = 'INSERT INTO countries (country, population, name) VALUES ("' + countryCode + '", ' + data.population + ', "' + data.name + '")';
+                                    conMysql.query(sql, function (err, result) {
+                                    });
                                 });
-                            });
-                        } catch (e) {
-                            console.log(e, countryCode);
+                            } catch (e) {
+                                console.log(e, countryCode);
+                            }
                         }
-                    }
-                });
-
+                    });
+                }
             })
         }
     });
@@ -153,6 +160,7 @@ app.get('/update', function (req, res) {
 
 app.use(express.static('public'));
 
+// TODO Commenter
 app.get('/', function (req, res) {
     var bandsByCountry = {};
     var sql = "CALL getTopGenres();";
@@ -181,8 +189,53 @@ app.get('/', function (req, res) {
                             bandsByCountry[row.country].number_bands = row.number_bands;
                     }
 
+                    var numberBandsByGenre = {};
+                    numberBandsByGenre['all'] = {};
+                    var colorsByGenre = {};
+                    // Aditionne le total de groupe
+                    Object.keys(bandsByCountry).map(function (code, key) {
+                        numberBandsByGenre['all'][code] = bandsByCountry[code].number_bands;
+                        for (i in bandsByCountry[code].top) {
+                            if (!(bandsByCountry[code].top[i].genre in numberBandsByGenre)) {
+                                numberBandsByGenre[bandsByCountry[code].top[i].genre] = {};
+                            }
+                            if (numberBandsByGenre[bandsByCountry[code].top[i].genre][code]) {
+                                numberBandsByGenre[bandsByCountry[code].top[i].genre][code] += bandsByCountry[code].top[i].number;
+                            } else {
+                                numberBandsByGenre[bandsByCountry[code].top[i].genre][code] = bandsByCountry[code].top[i].number;
+                            }
+                        }
+                    });
+
+                    // Calcule le nombre de groupe par mo d'habitant
+                    Object.keys(numberBandsByGenre).map(function (genre, key) {
+                        Object.keys(numberBandsByGenre[genre]).map(function (code, k) {
+                            numberBandsByGenre[genre][code] = Math.round(numberBandsByGenre[genre][code] / (bandsByCountry[code].population / 1000000) * 100) / 100;
+                        });
+                    });
+
+                    // Calcule des couleurs
+                    Object.keys(numberBandsByGenre).map(function (genre, key) {
+                        colorsByGenre[genre] = {};
+                        var max = Object.keys(numberBandsByGenre[genre]).reduce(function (previous, code) {
+                            return Math.max(previous, numberBandsByGenre[genre][code]);
+                        }, 0);
+
+                        Object.keys(numberBandsByGenre[genre]).map(function (code, k) {
+                            if (max == numberBandsByGenre[genre][code]) {
+                                colorsByGenre[genre][code] = "#000f28";
+                            } else {
+                                var temp = componentToHex(Math.ceil(255 - numberBandsByGenre[genre][code] / max * 255));
+                                colorsByGenre[genre][code] = "#" + temp + temp + temp;
+                            }
+                        });
+                    });
+
                     res.render('index', {
-                        bandsByCountry: bandsByCountry
+                        bandsByCountry: bandsByCountry,
+                        numberBandsByGenre: numberBandsByGenre,
+                        colorsByGenre: colorsByGenre,
+                        genres: Object.keys(synonyms)
                     });
                 }
             });
