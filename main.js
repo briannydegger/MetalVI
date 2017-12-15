@@ -192,6 +192,7 @@ app.get('/', function (req, res) {
                     var numberBandsByGenre = {};
                     numberBandsByGenre['all'] = {};
                     var colorsByGenre = {};
+                    var maxByGenre = {};
                     // Aditionne le total de groupe
                     Object.keys(bandsByCountry).map(function (code, key) {
                         numberBandsByGenre['all'][code] = bandsByCountry[code].number_bands;
@@ -220,6 +221,7 @@ app.get('/', function (req, res) {
                         var max = Object.keys(numberBandsByGenre[genre]).reduce(function (previous, code) {
                             return Math.max(previous, numberBandsByGenre[genre][code]);
                         }, 0);
+                        maxByGenre[genre] = max;
 
                         Object.keys(numberBandsByGenre[genre]).map(function (code, k) {
                             if (max == numberBandsByGenre[genre][code]) {
@@ -235,7 +237,8 @@ app.get('/', function (req, res) {
                         bandsByCountry: bandsByCountry,
                         numberBandsByGenre: numberBandsByGenre,
                         colorsByGenre: colorsByGenre,
-                        genres: Object.keys(synonyms)
+                        genres: Object.keys(synonyms),
+                        maxByGenre: maxByGenre
                     });
                 }
             });

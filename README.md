@@ -20,6 +20,13 @@ On récupère nous les données. Url ajax dont les paramètre ne peuvent être m
 Synonyme pour les genres.
 probèlme sj : Svalbard.
 
+
+légendes. 
+absolut ou relatif
+click : 
+plus gros groupes pas genre (avec lien groupe)
+
+
 ## Liens utiles
 
 *   [API](http://em.wemakesites.net/)

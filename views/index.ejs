@@ -40,11 +40,36 @@
             min-width: 150px;
             background-color: white;
             color: black;
+            text-align: center;
         }
 
         .jqvmap-label p {
-
+            margin: 0px;
             text-align: center;
+        }
+
+        .jqvmap-label p:last-of-type {
+            margin-bottom: 10px;
+        }
+
+        .jqvmap-label ol {
+            text-align: left
+        }
+
+        #ladder {
+            background: linear-gradient(to left, black, white);
+            width: 200px;
+            height: 10px;
+            position: fixed;
+            right: 200px;
+            bottom: 20px;
+            border: 1px solid black;
+        }
+
+        #ladder div {
+            width: 200px;
+            position: fixed;
+            margin-top: -21px;
         }
     </style>
 
@@ -53,6 +78,7 @@
         var numberBandsByGenre = <%-JSON.stringify(numberBandsByGenre) %>;
         var colorsByGenre = <%-JSON.stringify(colorsByGenre) %>;
         var genres = <%-JSON.stringify(genres) %>;
+        var maxByGenre = <%-JSON.stringify(maxByGenre) %>;
         console.log(bandsByCountry, numberBandsByGenre, colorsByGenre);
         const topGenre = 3;
 
@@ -66,15 +92,18 @@
                 colors: colorsByGenre[genre],
                 onLabelShow: function (event, label, code) {
                     label.append("<hr />");
-                    if (numberBandsByGenre[genre] && numberBandsByGenre[genre][code])
-                        label.append("<p>" + numberBandsByGenre[genre][code] + "</p>");
+                    if (numberBandsByGenre[genre] && numberBandsByGenre[genre][code]) {
+                            label.append("<p><b>" + numberBandsByGenre[genre][code] + "</b></p><p>bands per 1 million people</p>");
+                        if (genre != 'all')
+                            label.append("<p>" + genre + "</p>");
+                    }
                     else {
                         if (genre == 'all')
                             label.append("<p>No band</p>");
                         else
                             label.append("<p>No band of " + genre + "</p>");
                     }
-                    var ol = "<ol>";
+                    var ol = "<hr /><ol>";
                     for (var i = 0; i < topGenre; i++) {
                         if (bandsByCountry[code] && bandsByCountry[code].top[i]) {
                             ol += "<li>" + bandsByCountry[code].top[i].genre + "</li>";
@@ -99,6 +128,8 @@
             $(".flex-column").mouseleave(function () {
                 $(".nav-link").mouseenter(linkMouseenter);
             });
+
+            $("#ladder-max").html(maxByGenre[genre]);
         });
 
         function linkMouseenter() {
@@ -108,6 +139,7 @@
             if (!(genre in colorsByGenre))
                 genre = 'all';
             $('#vmap').vectorMap('set', 'colors', colorsByGenre[genre]);
+            $("#ladder-max").html(maxByGenre[genre]);
         }
     </script>
 </head>
@@ -127,6 +159,7 @@
     </ul>
 
     <div id="vmap" style="height: 100%; position: absolute; margin-left: 250px;"></div>
+    <div id="ladder"><div>0</div><div id="ladder-max" style="text-align: right;">100</div></div>
 </body>
 
 </html>
