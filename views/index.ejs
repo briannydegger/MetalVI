@@ -61,7 +61,7 @@
             width: 200px;
             height: 10px;
             position: fixed;
-            right: 200px;
+            right: 10%;
             bottom: 20px;
             border: 1px solid black;
         }
@@ -70,6 +70,13 @@
             width: 200px;
             position: fixed;
             margin-top: -21px;
+        }
+
+        #title {
+            position: fixed;
+            bottom: 5px;
+            width: 100%;
+            text-align: center;
         }
     </style>
 
@@ -149,16 +156,17 @@
         <li>
             <h1>Metal Genres</h1>
             <h6>Data by
-                <a href="https://www.metal-archives.com/">metal-archives</a>
+                <a href="https://www.metal-archives.com/" target="_blank">metal-archives</a>
             </h6>
         </li>
         <hr />
         <li class="nav-item">
-            <a class="nav-link active" href="#">Number of Metal band per 1 million people</a>
+            <a class="nav-link active" href="#">All genres</a>
         </li>
     </ul>
 
     <div id="vmap" style="height: 100%; position: absolute; margin-left: 250px;"></div>
+    <div id="title"><h4>Number of Metal band per 1 million people</h4></div>
     <div id="ladder"><div>0</div><div id="ladder-max" style="text-align: right;">100</div></div>
 </body>
 

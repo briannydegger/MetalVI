@@ -25,7 +25,12 @@ légendes.
 absolut ou relatif
 click : 
 plus gros groupes pas genre (avec lien groupe)
-
+Scheiner man détails
+Discussion avec prof : Technique puisses tester !!!
+Sources
+Argumenter choix VI utilisé
+Résultats
+Détails : Fromage ?
 
 ## Liens utiles
 
