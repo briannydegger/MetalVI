@@ -23,6 +23,9 @@ function componentToHex(c) {
     return hex.length == 1 ? "0" + hex : hex;
 }
 
+require('http').globalAgent.maxSockets = Infinity;
+require('https').globalAgent.maxSockets = Infinity;
+
 /**
  * Récupère tous les groupes par pays, 500 par 500
  * @param {*} countryCode Code du pays
@@ -151,6 +154,42 @@ app.get('/update', function (req, res) {
                     });
                 }
             })
+        }
+    });
+
+    res.write('Updating.');
+    res.end();
+})
+
+
+/**
+ * Requête pour mettre à jour le nombre de reviews par groupes
+ */
+app.get('/update-reviews', function (req, res) {
+    var sql = "SELECT * FROM bands WHERE number_review IS NULL LIMIT 10000;";
+    conMysql.query(sql, function (err, result) {
+        if (!err) {
+            for (i in result) {
+                var row = result[i];
+                (function (id) {
+                    request('https://www.metal-archives.com/band/discography/id/' + id + '/tab/all', function (errorDisc, responseDisc, htmlDisc) {
+                        if (!errorDisc) {
+                            var $ = cheerio.load(htmlDisc);
+                            var number_review = 0;
+                            $('tr td:last-child a').each(function (i, el) {
+                                var split = $(el).html().split(" ");
+                                if (split[0])
+                                    number_review += parseInt(split[0]);
+                            });
+
+                            var sqlUpdate = 'UPDATE bands SET number_review = ' + number_review + ' WHERE band_id = ' + id + ';';
+                            conMysql.query(sqlUpdate, function (err, result) {
+                                console.log(sqlUpdate, result);
+                            });
+                        }
+                    });
+                })(row.band_id);
+            }
         }
     });
 
