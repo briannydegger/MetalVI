@@ -223,6 +223,11 @@ app.get('/', function (req, res) {
                         }, 0);
                         maxByGenre[genre] = max;
 
+                        // Définit les couleurs par défaut (blanc)
+                        for (i in countriesInMap) {
+                            colorsByGenre[genre][countriesInMap[i]] = "#FFFFFF";
+                        }
+
                         Object.keys(numberBandsByGenre[genre]).map(function (code, k) {
                             if (max == numberBandsByGenre[genre][code]) {
                                 colorsByGenre[genre][code] = "#000f28";
