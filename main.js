@@ -7,15 +7,17 @@ app.set('view engine', 'ejs');
 
 var synonyms = require('./synonyms.js');
 var countriesInMap = require('./countries.js');
+var fs = require('fs');
 
 var updating = 0;
+var updatingReviews = 0;
 
 var conMysql = mysql.createConnection({
     multipleStatements: true,
     host: 'sql01.michaelminelli.ch',
     user: 'metalVI',
     password: 'vi2017',
-    database: 'hesso_vi'
+    database: 'hesso_vi',
 });
 
 function componentToHex(c) {
@@ -36,7 +38,7 @@ function getAllBands(countryCode, start, countries) {
     request('https://www.metal-archives.com/browse/ajax-country/c/' + countryCode + '/json/1?sEcho=1&iColumns=4&sColumns=&iDisplayStart=' + start + '&iDisplayLength=500&mDataProp_0=0&mDataProp_1=1&mDataProp_2=2&mDataProp_3=3&iSortCol_0=0&sSortDir_0=asc&iSortingCols=1&bSortable_0=true&bSortable_1=true&bSortable_2=true&bSortable_3=false&_=1512315355906', function (errorCountry, responseCountry, jsonCountry) {
         if (!errorCountry) {
             try {
-                var data = JSON.parse(jsonCountry);
+                var data = JSON.parse(jsonCountry.replace('"sEcho": ,', '"sEcho": 1,'));
 
                 if (start == 0) {
                     countries = data;
@@ -44,9 +46,10 @@ function getAllBands(countryCode, start, countries) {
                     countries.aaData = countries.aaData.concat(data.aaData);
                 }
 
-                if (countries.aaData.length < countries.iTotalRecords) {
+                var next = start + 500;
+                if (next < countries.iTotalRecords) {
                     // Récursif
-                    getAllBands(countryCode, start + 500, countries)
+                    getAllBands(countryCode, next, countries)
                 } else {
                     // Parse les infos
                     countries.aaData = countries.aaData.map(a => {
@@ -163,9 +166,10 @@ app.get('/update', function (req, res) {
 
 
 /**
- * Requête pour mettre à jour le nombre de reviews par groupes
+ * Requête pour mettre à jour le nombre de reviews par groupes encore non définie (un par un)
+ * Obsolète.
  */
-app.get('/update-reviews', function (req, res) {
+app.get('/update-bands-reviews-null', function (req, res) {
     var sql = "SELECT * FROM bands WHERE number_review IS NULL LIMIT 10000;";
     conMysql.query(sql, function (err, result) {
         if (!err) {
@@ -195,7 +199,73 @@ app.get('/update-reviews', function (req, res) {
 
     res.write('Updating.');
     res.end();
-})
+});
+
+function getAllReviews(percent, start, reviews) {
+    request('https://www.metal-archives.com/review/ajax-list-browse/by/rating/selection/' + percent + '?sEcho=2&iColumns=7&sColumns=&iDisplayStart=' + start + '&iDisplayLength=200&mDataProp_0=0&mDataProp_1=1&mDataProp_2=2&mDataProp_3=3&mDataProp_4=4&mDataProp_5=5&mDataProp_6=6&iSortCol_0=4&sSortDir_0=desc&iSortingCols=1&bSortable_0=true&bSortable_1=false&bSortable_2=true&bSortable_3=false&bSortable_4=true&bSortable_5=true&bSortable_6=true&_=1513770503213', function (error, response, html) {
+        if (!error) {
+            try {
+                var data = JSON.parse(html.replace('"sEcho": ,', '"sEcho": 1,'));
+
+                if (start == 0) {
+                    reviews = data;
+                } else {
+                    reviews.aaData = reviews.aaData.concat(data.aaData);
+                }
+
+                var next = start + 200;
+                if (next < reviews.iTotalRecords) {
+                    // Récursif
+                    getAllReviews(percent, next, reviews)
+                } else {
+                    // Parse les infos
+                    var numberByBand = {};
+                    for (var i in reviews.aaData) {
+                        var id = reviews.aaData[i][2].split("/")[5].split('"')[0];
+                        if (Number.isInteger(parseInt(id)))
+                            numberByBand[id] = numberByBand[id] ? numberByBand[id] + 1 : 1;
+                    }
+
+                    var sqlUpdate = '';
+                    Object.keys(numberByBand).map(function (id, i) {
+                        sqlUpdate += "UPDATE bands SET number_review = number_review + " + numberByBand[id] + " WHERE band_id = " + id + "; ";
+                    });
+
+                    console.log('sql', percent);
+                    //fs.writeFile("./sql" + percent, sqlUpdate, function (err) { });
+
+                    conMysql.query(sqlUpdate, function (err, result) {
+                        console.log('enddddddddddddddddd', percent, err)
+                    });
+                }
+            } catch (e) {
+                console.log(e, percent, start, html);
+            }
+        }
+    });
+}
+
+/**
+ * Requête pour mettre à jour le nombre de reviews par groupes
+ */
+app.get('/update-reviews', function (req, res) {
+    // Permet l'update toute les heures (évite plusieurs update en même temps)
+    if (updatingReviews + 3600000 > new Date().getTime()) {
+        res.write('Update already launched.');
+        res.end();
+        return;
+    }
+    updatingReviews = new Date().getTime();
+
+    var sql = "UPDATE bands SET number_review = 0;";
+    conMysql.query(sql, function (err, result) { });
+    for (var percent = 5; percent <= 100; percent += 5) {
+        getAllReviews(percent, 0, null);
+    }
+
+    res.write('Updating.');
+    res.end();
+});
 
 app.use(express.static('public'));
 

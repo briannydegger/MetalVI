@@ -32,6 +32,12 @@ Argumenter choix VI utilisé
 Résultats
 Détails : Fromage ?
 
+Une requete par groupe.
+
+Mettre dans le descriptif le but de ce projet (1er mail prof).
+
+statique / dynamique lul
+
 ## Liens utiles
 
 *   [API](http://em.wemakesites.net/)
