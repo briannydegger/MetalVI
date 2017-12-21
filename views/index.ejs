@@ -8,9 +8,12 @@
 
     <script type="text/javascript" src="http://code.jquery.com/jquery-1.11.3.min.js"></script>
 
-    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh" crossorigin="anonymous"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
+        crossorigin="anonymous"></script>
 
     <script type="text/javascript" src="manifestinteractive-jqvmap-780b2c1/dist/jquery.vmap.js"></script>
     <script type="text/javascript" src="manifestinteractive-jqvmap-780b2c1/dist/maps/jquery.vmap.world.js" charset="utf-8"></script>
@@ -34,6 +37,11 @@
 
         .nav {
             font-size: 14;
+            width: 250px;
+            height: 100%;
+            position: absolute;
+            overflow-y: auto;
+            display: inline;
         }
 
         #titles {
@@ -84,6 +92,13 @@
             bottom: 5px;
             width: 100%;
             text-align: center;
+            z-index: 10;
+        }
+
+        .switch {
+            width: 35%;
+            margin-left: 2px;
+            margin-right: 2px;
         }
     </style>
 
@@ -97,17 +112,22 @@
         const topGenre = 3;
 
         var genre = 'all';
+        var mode = "Relative";
+
+        var bandPer = {};
+        bandPer['Relative'] = "bands per 1 million people";
+        bandPer['Absolute'] = "bands";
         $(document).ready(function () {
             $('#vmap').vectorMap({
                 map: 'world_en',
                 enableZoom: true,
                 showTooltip: true,
                 color: '#FFFFFF',
-                colors: colorsByGenre[genre],
+                colors: colorsByGenre[mode][genre],
                 onLabelShow: function (event, label, code) {
                     label.append("<hr />");
-                    if (numberBandsByGenre[genre] && numberBandsByGenre[genre][code]) {
-                        label.append("<p><b>" + numberBandsByGenre[genre][code] + "</b></p><p>bands per 1 million people</p>");
+                    if (numberBandsByGenre[mode][genre] && numberBandsByGenre[mode][genre][code]) {
+                        label.append("<p><b>" + numberBandsByGenre[mode][genre][code] + "</b></p><p>" + bandPer[mode] + "</p>");
                         if (genre != 'all')
                             label.append("<p>" + genre + "</p>");
                     }
@@ -126,7 +146,7 @@
                     ol += "</ol>";
                     label.append(ol);
                 },
-                onRegionClick: function(event, code, region) {
+                onRegionClick: function (event, code, region) {
                     $("#detailsModalLabel").html(region);
                     $('#detailsModal').modal('show');
 
@@ -149,29 +169,54 @@
                 $(".nav-link").mouseenter(linkMouseenter);
             });
 
-            $("#ladder-max").html(maxByGenre[genre]);
+            $("#ladder-max").html(maxByGenre[mode][genre]);
+
+            // Switch
+            $(".switch").click(function (e) {
+                $(".switch").removeClass('active');
+                $(this).addClass('active');
+
+                mode = $(this).html();
+
+                if (mode == "Absolute") {
+                    $("#title h4").html("Number of Metal band active");
+                } else {
+                    $("#title h4").html("Number of Metal band active per 1 million people");
+                }
+
+                updateMap();
+            });
         });
 
         function linkMouseenter() {
             $(".nav-link").removeClass('active');
             $(this).addClass('active');
             genre = $(this).html();
-            if (!(genre in colorsByGenre))
+            if (!(genre in colorsByGenre[mode]))
                 genre = 'all';
-            $('#vmap').vectorMap('set', 'colors', colorsByGenre[genre]);
-            $("#ladder-max").html(maxByGenre[genre]);
+
+            updateMap();
+        }
+
+        function updateMap() {
+            $('#vmap').vectorMap('set', 'colors', colorsByGenre[mode][genre]);
+            $("#ladder-max").html(maxByGenre[mode][genre]);
         }
     </script>
 </head>
 
 <body>
-    <ul class="nav flex-column nav-pills" style="width: 250px; position: fixed;">
+    <ul class="nav flex-column nav-pills">
         <li>
             <h1>Metal Genres</h1>
             <h6>Data by
                 <a href="https://www.metal-archives.com/" target="_blank">metal-archives</a>
             </h6>
         </li>
+        <div style="width: 100%; text-align: center;">
+            <button class="btn btn-primary switch active">Relative</button>
+            <button class="btn btn-primary switch">Absolute</button>
+        </div>
         <hr />
         <li class="nav-item">
             <a class="nav-link active" href="#">All genres</a>
@@ -185,8 +230,9 @@
         <div>0</div>
         <div id="ladder-max" style="text-align: right;">100</div>
     </div>
-    
-    <div class="modal fade" id="detailsModal" tabindex="-1" role="dialog" data-backdrop="false" data-focus="false" aria-labelledby="detailsModalLabel" aria-hidden="true">
+
+    <div class="modal fade" id="detailsModal" tabindex="-1" role="dialog" data-backdrop="false" data-focus="false" aria-labelledby="detailsModalLabel"
+        aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">

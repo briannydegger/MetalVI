@@ -299,51 +299,59 @@ app.get('/', function (req, res) {
                     }
 
                     var numberBandsByGenre = {};
-                    numberBandsByGenre['all'] = {};
+                    numberBandsByGenre['Relative'] = {};
+                    numberBandsByGenre['Relative']['all'] = {};
+                    numberBandsByGenre['Absolute'] = {};
+                    numberBandsByGenre['Absolute']['all'] = {};
                     var colorsByGenre = {};
                     var maxByGenre = {};
                     // Aditionne le total de groupe
                     Object.keys(bandsByCountry).map(function (code, key) {
-                        numberBandsByGenre['all'][code] = bandsByCountry[code].number_bands;
+                        numberBandsByGenre['Absolute']['all'][code] = bandsByCountry[code].number_bands;
                         for (i in bandsByCountry[code].top) {
-                            if (!(bandsByCountry[code].top[i].genre in numberBandsByGenre)) {
-                                numberBandsByGenre[bandsByCountry[code].top[i].genre] = {};
+                            if (!(bandsByCountry[code].top[i].genre in numberBandsByGenre['Absolute'])) {
+                                numberBandsByGenre['Absolute'][bandsByCountry[code].top[i].genre] = {};
                             }
-                            if (numberBandsByGenre[bandsByCountry[code].top[i].genre][code]) {
-                                numberBandsByGenre[bandsByCountry[code].top[i].genre][code] += bandsByCountry[code].top[i].number;
+                            if (numberBandsByGenre['Absolute'][bandsByCountry[code].top[i].genre][code]) {
+                                numberBandsByGenre['Absolute'][bandsByCountry[code].top[i].genre][code] += bandsByCountry[code].top[i].number;
                             } else {
-                                numberBandsByGenre[bandsByCountry[code].top[i].genre][code] = bandsByCountry[code].top[i].number;
+                                numberBandsByGenre['Absolute'][bandsByCountry[code].top[i].genre][code] = bandsByCountry[code].top[i].number;
                             }
                         }
                     });
 
                     // Calcule le nombre de groupe par mo d'habitant
-                    Object.keys(numberBandsByGenre).map(function (genre, key) {
-                        Object.keys(numberBandsByGenre[genre]).map(function (code, k) {
-                            numberBandsByGenre[genre][code] = Math.round(numberBandsByGenre[genre][code] / (bandsByCountry[code].population / 1000000) * 100) / 100;
+                    Object.keys(numberBandsByGenre['Absolute']).map(function (genre, key) {
+                        numberBandsByGenre['Relative'][genre] = {};
+                        Object.keys(numberBandsByGenre['Absolute'][genre]).map(function (code, k) {
+                            numberBandsByGenre['Relative'][genre][code] = Math.round(numberBandsByGenre['Absolute'][genre][code] / (bandsByCountry[code].population / 1000000) * 100) / 100;
                         });
                     });
 
-                    // Calcule des couleurs
-                    Object.keys(numberBandsByGenre).map(function (genre, key) {
-                        colorsByGenre[genre] = {};
-                        var max = Object.keys(numberBandsByGenre[genre]).reduce(function (previous, code) {
-                            return Math.max(previous, numberBandsByGenre[genre][code]);
-                        }, 0);
-                        maxByGenre[genre] = max;
+                    // Calcule des couleurs Relative
+                    Object.keys(numberBandsByGenre).map(function (mode) {
+                        colorsByGenre[mode] = {};
+                        maxByGenre[mode] = {};
+                        Object.keys(numberBandsByGenre[mode]).map(function (genre) {
+                            colorsByGenre[mode][genre] = {};
+                            var max = Object.keys(numberBandsByGenre[mode][genre]).reduce(function (previous, code) {
+                                return Math.max(previous, numberBandsByGenre[mode][genre][code]);
+                            }, 0);
+                            maxByGenre[mode][genre] = max;
 
-                        // Définit les couleurs par défaut (blanc)
-                        for (i in countriesInMap) {
-                            colorsByGenre[genre][countriesInMap[i]] = "#FFFFFF";
-                        }
-
-                        Object.keys(numberBandsByGenre[genre]).map(function (code, k) {
-                            if (max == numberBandsByGenre[genre][code]) {
-                                colorsByGenre[genre][code] = "#000f28";
-                            } else {
-                                var temp = componentToHex(Math.ceil(255 - numberBandsByGenre[genre][code] / max * 255));
-                                colorsByGenre[genre][code] = "#" + temp + temp + temp;
+                            // Définit les couleurs par défaut (blanc)
+                            for (i in countriesInMap) {
+                                colorsByGenre[mode][genre][countriesInMap[i]] = "#FFFFFF";
                             }
+
+                            Object.keys(numberBandsByGenre[mode][genre]).map(function (code, k) {
+                                if (max == numberBandsByGenre[mode][genre][code]) {
+                                    colorsByGenre[mode][genre][code] = "#000f28";
+                                } else {
+                                    var temp = componentToHex(Math.ceil(255 - numberBandsByGenre[mode][genre][code] / max * 255));
+                                    colorsByGenre[mode][genre][code] = "#" + temp + temp + temp;
+                                }
+                            });
                         });
                     });
 
