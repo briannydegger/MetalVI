@@ -4,6 +4,11 @@ const app = express()
 var cheerio = require('cheerio');
 var mysql = require('mysql');
 app.set('view engine', 'ejs');
+var bodyParser = require('body-parser');
+app.use(bodyParser.json()); // for parsing application/json
+app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
+    extended: true
+}));
 
 var synonyms = require('./synonyms.js');
 var countriesInMap = require('./countries.js');
@@ -89,7 +94,6 @@ function getAllBands(countryCode, start, countries) {
                                 //console.log(sqlGenres, err, result);
                             });
                         }
-
                     });
                 }
             } catch (e) {
@@ -265,6 +269,37 @@ app.get('/update-reviews', function (req, res) {
 
     res.write('Updating.');
     res.end();
+});
+
+app.post('/get-bands-by-country-genre', function (req, res) {
+    var genre = req.body.genre;
+    var country = req.body.country;
+
+    if (!(genre in synonyms))
+        genre = '%';
+
+    var sql = "SELECT * FROM bands\
+    JOIN bands_genres_pivot ON bands_genres_pivot.band_id = bands.band_id JOIN genres ON genres.genre_id = bands_genres_pivot.genre_id\
+    WHERE country = '" + country + "' AND genres.genre LIKE '" + genre + "' GROUP BY bands.band_id ORDER BY number_review DESC";
+    conMysql.query(sql, function (err, result) {
+        if (!err) {
+            var data = [];
+            for (var i in result) {
+                var value = result[i];
+
+                data.push([
+                    '<a target="_blank" href="' + value.link + '">' + value.name + '</a>',
+                    value.genres,
+                    value.location,
+                    value.status,
+                    value.number_review
+                ]);
+            }
+
+            res.setHeader('Content-Type', 'application/json');
+            res.send(JSON.stringify(data));
+        }
+    });
 });
 
 app.use(express.static('public'));

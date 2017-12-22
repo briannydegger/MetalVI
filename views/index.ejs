@@ -8,8 +8,6 @@
 
     <script type="text/javascript" src="http://code.jquery.com/jquery-1.11.3.min.js"></script>
 
-    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
-        crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
         crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
@@ -18,7 +16,8 @@
     <script type="text/javascript" src="manifestinteractive-jqvmap-780b2c1/dist/jquery.vmap.js"></script>
     <script type="text/javascript" src="manifestinteractive-jqvmap-780b2c1/dist/maps/jquery.vmap.world.js" charset="utf-8"></script>
 
-    <script src="//d3js.org/d3.v3.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs4/dt-1.10.16/r-2.2.1/datatables.min.css" />
+    <script type="text/javascript" src="https://cdn.datatables.net/v/bs4/dt-1.10.16/r-2.2.1/datatables.min.js"></script>
 
     <style>
         body {
@@ -100,6 +99,38 @@
             margin-left: 2px;
             margin-right: 2px;
         }
+
+        .modal-lg {
+            max-width: 100% !important;
+        }
+
+        #bands_wrapper .col-md-6 {
+            padding: 0px !important;
+        }
+
+        #bands_wrapper {
+            width: 98%;
+        }
+
+        .loader {
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid #3498db;
+            border-radius: 70%;
+            width: 15px;
+            height: 15px;
+            margin: auto;
+            margin-left: 10px;
+            animation: spin 2s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
     </style>
 
     <script type="text/javascript">
@@ -147,8 +178,21 @@
                     label.append(ol);
                 },
                 onRegionClick: function (event, code, region) {
+                    $("#loader").addClass('loader');
+                    $('#bands').dataTable().fnClearTable();
                     $("#detailsModalLabel").html(region);
                     $('#detailsModal').modal('show');
+                    $.ajax({
+                        type: 'POST',
+                        url: '/get-bands-by-country-genre',
+                        data: { genre: genre, country: code },
+                        dataType: 'json',
+                        success: function (data) {
+                            $('#bands').dataTable().fnAddData(data);
+
+                            $("#loader").removeClass('loader');
+                        },
+                    });
 
                     event.preventDefault();
                 }
@@ -185,6 +229,12 @@
                 }
 
                 updateMap();
+            });
+
+            $('#bands').DataTable({
+                "order": [[4, "desc"]],
+                "bProcessing": true,
+                "pageLength": 15,
             });
         });
 
@@ -231,22 +281,36 @@
         <div id="ladder-max" style="text-align: right;">100</div>
     </div>
 
-    <div class="modal fade" id="detailsModal" tabindex="-1" role="dialog" data-backdrop="false" data-focus="false" aria-labelledby="detailsModalLabel"
+    <div class="modal fade" id="detailsModal" tabindex="-1" role="dialog" data-focus="false" aria-labelledby="detailsModalLabel"
         aria-hidden="true">
-        <div class="modal-dialog" role="document">
+        <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="detailsModalLabel">Country</h5>
+                    <h3 class="modal-title" id="detailsModalLabel">Country</h3>
+                    <div id="loader" class="loader"></div>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
-
+                    <h6>Bands sort by popularity (number of reviews)</h6>
+                    <hr />
+                    <table id="bands" class="display" cellspacing="0" width="100%">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Genres</th>
+                                <th>Location</th>
+                                <th>Status</th>
+                                <th>Number Review</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary">Save changes</button>
                 </div>
             </div>
         </div>
