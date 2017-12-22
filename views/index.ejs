@@ -24,6 +24,12 @@
             font-family: 'Alegreya JM', "Times New Roman", Times, serif;
         }
 
+        #vmap {
+            height: 100%;
+            position: absolute;
+            margin-left: 250px;
+        }
+
         ol {
             padding-left: 20px;
         }
@@ -41,6 +47,24 @@
             position: absolute;
             overflow-y: auto;
             display: inline;
+        }
+
+        @media (max-width: 900px) {
+            .nav {
+                width: 20%;
+            }
+
+            #vmap {
+                margin-left: 20%;
+            }
+
+            .switch {
+                padding: 5px;
+            }
+
+            h1 {
+                font-size: 20pt;
+            }
         }
 
         #titles {
@@ -272,7 +296,7 @@
             <a class="nav-link active" href="#">All genres</a>
         </li>
     </ul>
-    <div id="vmap" style="height: 100%; position: absolute; margin-left: 250px;"></div>
+    <div id="vmap"></div>
     <div id="title">
         <h4>Number of Metal band active per 1 million people</h4>
     </div>
