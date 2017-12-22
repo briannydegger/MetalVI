@@ -204,7 +204,7 @@
                 onRegionClick: function (event, code, region) {
                     $("#loader").addClass('loader');
                     $('#bands').dataTable().fnClearTable();
-                    $("#detailsModalLabel").html(region);
+                    $("#detailsModalLabel").html(region + " - " + (genre == 'all' ? 'All genres' : genre));
                     $('#detailsModal').modal('show');
                     $.ajax({
                         type: 'POST',
