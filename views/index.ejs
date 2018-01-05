@@ -4,6 +4,7 @@
     <title>Metal Genre Map</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
         crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
     <link href="manifestinteractive-jqvmap-780b2c1/dist/jqvmap.css" media="screen" rel="stylesheet" type="text/css">
 
     <script type="text/javascript" src="http://code.jquery.com/jquery-1.11.3.min.js"></script>
@@ -155,6 +156,33 @@
                 transform: rotate(360deg);
             }
         }
+
+        .badge {
+            display: inline-block;
+            padding: .25em .4em;
+            font-size: 75%;
+            font-weight: 700;
+            line-height: 1;
+            color: #fff;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: baseline;
+            border-radius: .25rem;
+        }
+
+        .badge-default {
+            background-color: #636c72;
+        }
+
+        .bg-default {
+            background-color: #636c72;
+        }
+
+        .tooltip-inner {
+            max-width: 350px;
+            /* If max-width does not work, try using width instead */
+            width: 350px; 
+        }
     </style>
 
     <script type="text/javascript">
@@ -215,6 +243,10 @@
                             $('#bands').dataTable().fnAddData(data);
 
                             $("#loader").removeClass('loader');
+
+                            $('#bands').tooltip({
+                                selector: "a[rel=tooltip]"
+                            })
                         },
                     });
 

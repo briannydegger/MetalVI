@@ -25,6 +25,46 @@ var conMysql = mysql.createConnection({
     database: 'hesso_vi',
 });
 
+var countriesAbr = {
+    'AT': 'Austria',
+    'BU': 'Bulgaria',
+    'CZ': 'Czech Republic',
+    'DK': 'Denmark',
+    'EE': 'Estonia',
+    'FI': 'Finland',
+    'FR': 'France',
+    'DE': 'Germany',
+    'HU': 'Hungary',
+    'IE': 'Ireland',
+    'IT': 'Italy',
+    'NL': 'Netherlands',
+    'NO': 'Norway',
+    'PL': 'Poland',
+    'PT': 'Portugal',
+    'RM': 'Romania',
+    'SI': 'Slovenia',
+    'ES': 'Spain',
+    'SE': 'Sweden',
+    'CH': 'Switzerland',
+    'TR': 'Turkey',
+    'GB': 'United Kingdom',
+    'CA': 'Canada',
+    'MX': 'Mexico',
+    'PR': 'Puerto Rico',
+    'US': 'USA',
+    'AR': 'Argentina',
+    'BR': 'Brazil',
+    'AU': 'Australia',
+    'IN': 'India',
+    'MY': 'Malaysia',
+    'NZ': 'New Zealand',
+    'CN': 'People\'s Republic of China',
+    'SG': 'Singapore',
+    'SK': 'South Korea',
+    'TW': 'Taiwan',
+    'UA': 'United Arab Emirates'
+};
+
 function componentToHex(c) {
     var hex = c.toString(16);
     return hex.length == 1 ? "0" + hex : hex;
@@ -284,15 +324,56 @@ app.post('/get-bands-by-country-genre', function (req, res) {
     conMysql.query(sql, function (err, result) {
         if (!err) {
             var data = [];
+
+            var maxReview = 0;
+            for (var i in result) {
+                if (result[i].number_review > maxReview) 
+                    maxReview = result[i].number_review;
+            }
+            
             for (var i in result) {
                 var value = result[i];
 
+                var badgeColor = "default";
+                switch (value.status) {
+                    case "active":
+                        badgeColor = "success";
+                        break;
+                    case "split_up":
+                        badgeColor = "danger";
+                        break;
+                    case "changed_name":
+                        badgeColor = "info";
+                        break;
+                    case "on_hold":
+                        badgeColor = "warning";
+                        break;
+                    default:
+                        badgeColor = "default";
+                        break;
+                }
+
+                var reviewPercent = value.number_review * 100 / maxReview;
+                var reviewColor = "default";
+                if (reviewPercent <= 16) 
+                    reviewColor = "default";
+                else if (reviewPercent <= 32) 
+                    reviewColor = "danger";
+                else if (reviewPercent <= 48) 
+                    reviewColor = "warning";
+                else if (reviewPercent <= 64) 
+                    reviewColor = "info";
+                else if (reviewPercent <= 80) 
+                    reviewColor = "primary";
+                else if (reviewPercent <= 100) 
+                    reviewColor = "success";
+
                 data.push([
                     '<a target="_blank" href="' + value.link + '">' + value.name + '</a>',
-                    value.genres,
-                    value.location,
-                    value.status,
-                    value.number_review
+                    value.genres + " " + countriesAbr[country.toUpperCase()] + " " + country.toUpperCase(),
+                    "<a title=\"<iframe width=350 src='https://www.google.com/maps/embed/v1/place?key=AIzaSyBpV42s6HuPSAElonTMt1ToDK5tbk0lSOY&q=" + encodeURI(value.location + "," + countriesAbr[country.toUpperCase()]) + "'/>\" data-html='true' rel='tooltip' target='_blank' href='https://www.google.com/maps/search/?api=1&query=" + encodeURI(value.location + "," + countriesAbr[country.toUpperCase()]) + "'><i class='fa fa-map-marker'></i></a> " + value.location,
+                    "<span class='badge badge-" + badgeColor + "'>" + value.status + "</span>",
+                    "<div class='progress'><div class='progress-bar bg-" + reviewColor + "' role='progressbar' style='width: " + reviewPercent + "%;' aria-valuenow='" + reviewPercent + "' aria-valuemin='0' aria-valuemax='100'>" + value.number_review + "</div></div>"
                 ]);
             }
 
