@@ -371,7 +371,7 @@ app.post('/get-bands-by-country-genre', function (req, res) {
                 data.push([
                     '<a target="_blank" href="' + value.link + '">' + value.name + '</a>',
                     value.genres + " " + countriesAbr[country.toUpperCase()] + " " + country.toUpperCase(),
-                    "<a title=\"<iframe width=350 src='https://www.google.com/maps/embed/v1/place?key=AIzaSyBpV42s6HuPSAElonTMt1ToDK5tbk0lSOY&q=" + encodeURI(value.location + "," + countriesAbr[country.toUpperCase()]) + "'/>\" data-html='true' rel='tooltip' target='_blank' href='https://www.google.com/maps/search/?api=1&query=" + encodeURI(value.location + "," + countriesAbr[country.toUpperCase()]) + "'><i class='fa fa-map-marker'></i></a> " + value.location,
+                    "<a title=\"<iframe width=350 src='https://www.google.com/maps/embed/v1/place?key=AIzaSyBpV42s6HuPSAElonTMt1ToDK5tbk0lSOY&q=" + encodeURI(value.location + "," + countriesAbr[country.toUpperCase()]) + "'/>\" data-html='true' rel='tooltip' target='_blank' href='https://www.google.com/maps/search/?api=1&query=" + encodeURI(value.location + "," + countriesAbr[country.toUpperCase()]) + "'><i class='fa fa-map-marker'></i> " + value.location + "</a>",
                     "<span class='badge badge-" + badgeColor + "'>" + value.status + "</span>",
                     "<div class='progress'><div class='progress-bar bg-" + reviewColor + "' role='progressbar' style='width: " + reviewPercent + "%;' aria-valuenow='" + reviewPercent + "' aria-valuemin='0' aria-valuemax='100'>" + value.number_review + "</div></div>"
                 ]);
