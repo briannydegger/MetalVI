@@ -327,10 +327,10 @@ app.post('/get-bands-by-country-genre', function (req, res) {
 
             var maxReview = 0;
             for (var i in result) {
-                if (result[i].number_review > maxReview) 
+                if (result[i].number_review > maxReview)
                     maxReview = result[i].number_review;
             }
-            
+
             for (var i in result) {
                 var value = result[i];
 
@@ -355,17 +355,17 @@ app.post('/get-bands-by-country-genre', function (req, res) {
 
                 var reviewPercent = value.number_review * 100 / maxReview;
                 var reviewColor = "default";
-                if (reviewPercent <= 16) 
+                if (reviewPercent <= 16)
                     reviewColor = "default";
-                else if (reviewPercent <= 32) 
+                else if (reviewPercent <= 32)
                     reviewColor = "danger";
-                else if (reviewPercent <= 48) 
+                else if (reviewPercent <= 48)
                     reviewColor = "warning";
-                else if (reviewPercent <= 64) 
+                else if (reviewPercent <= 64)
                     reviewColor = "info";
-                else if (reviewPercent <= 80) 
+                else if (reviewPercent <= 80)
                     reviewColor = "primary";
-                else if (reviewPercent <= 100) 
+                else if (reviewPercent <= 100)
                     reviewColor = "success";
 
                 data.push([
@@ -484,4 +484,5 @@ app.get('/', function (req, res) {
     });
 });
 
-app.listen(8081, () => console.log('Metal VI app listening on port 8081!'))
+const PORT = process.env.PORT || 8081
+app.listen(PORT, () => console.log(`Listening on ${PORT}`))
