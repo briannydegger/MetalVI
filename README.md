@@ -13,7 +13,7 @@ C'est un site web contenant une carte du monde avec comme aperçu sur chaque pay
 
 Il y a la possibilité de filtrer et de rechercher. On pourrait aussi accéder aux détails d'un pays en cliquant sur celui-ci (détails à définir).
 
-Les données utilisées proviennent de l'API [http://em.wemakesites.net/](http://em.wemakesites.net/) qui récupère les données du site très utilisé dans le milieu :  [metal-archives](http://metal-archives.com/).
+Les données utilisées proviennent de l'API [http://em.wemakesites.net/](http://em.wemakesites.net/) qui récupère les données du site très utilisées dans le milieu :  [metal-archives](http://metal-archives.com/).
 
 Le but du projet est d'avoir les genres de Metal par zone du monde et d'analyser quels pays accueillent le mieux cette musique.
 
@@ -39,7 +39,7 @@ Nous avions tout d'abord indiqué dans le cahier des charges la source de donné
 Malheureusement, cette API s'est avérée avoir une limite très dérangeante. En effet, nous ne pouvons qu'extraire que 200 groupes par pays au maximum. Contacté, le créateur de cette source de données nous a indiqué que c'était dû à un problème technique dans son script de récupération (apparemment une limite du côté de metal-archives) auquel il n'a pas encore trouvé de solution.
 
 Comme nous ne pouvions pas utiliser cette source de données, nous avons alors dû analyser le site [Ecyclopaedia Metallum](http://metal-archives.com/) et avons trouvé des appels faits à leur propre API. Grâce à ces appels, nous pouvions donc extraire les URL et les utiliser dans notre propre application. 
-Malheureusement rien n'est jamais facile :). En effet, cette source de données possède aussi ses limitations. Nous ne pouvons obtenir les données que par paquets de 500. Heureusement, nous pouvons choisir la "page" et ainsi obtenir les 500 suivant et ainsi de suite. À partir de cette constatation, nous avons développé notre propre source de données avec un script de récupération des données sur metal-archives.
+Malheureusement rien n'est jamais facile :). En effet, cette source de données possède aussi ses limitations. Nous ne pouvons obtenir les données que par paquets de 500. Heureusement, nous pouvons choisir la "page" et ainsi obtenir les 500 suivants et ainsi de suite. À partir de cette constatation, nous avons développé notre propre source de données avec un script de récupération des données sur metal-archives.
 
 Autre source de données, [Rest Countries](http://restcountries.eu/) nous permet d'obtenir la population de chaque pays pour l'affichage relatif.
 
@@ -58,7 +58,7 @@ Autre source de données, [Rest Countries](http://restcountries.eu/) nous permet
 
 ## Carte du monde
 
-Pour le choix de l'outils pour la carte du monde, il a fallu en choissir une qui n'affiche pas les petits pays (comme Monaco ou le Liechtenstein, ou alors l'île Svalbard qui est inclut dans la Norvège). Car ceux ci, ayant une faible population, le rapport groupe / population est trop élevé par rapport aux autres.
+Pour le choix de l'outil pour la carte du monde, il a fallu en choisir une qui n'affiche pas les petits pays (comme Monaco ou le Liechtenstein, ou alors l'île Svalbard qui est inclus dans la Norvège). Car ceux-ci, ayant une faible population, le rapport groupe / population est trop élevé par rapport aux autres.
 
 # Utilisabilité 
 ✓   |    Félicité (Bliss) 
@@ -102,13 +102,13 @@ Quant aux points non respectés, celui sur l'erreur ne l'ait pas, car si un time
 
 # Tests utilisateurs
 
-Nous avons pu effectué des tests avec plusieurs personnes. Voici le contexte qui leur a été donné :
+Nous avons pu effectuer des tests avec plusieurs personnes. Voici le contexte qui leur a été donné :
 
 *Vous vous intéressez aux différents genres de Metal et vous vous demandez dans quels pays se trouve le plus de groupe de vos deux genres préférés, qui sont le Power Metal et le Symphonique Metal. Après une recherche Google vous tombez sur ce site. Est-ce que les informations recherchées sont comprises facilement ?*
 
-Leur premier réflexe a été de jouer avec le changement de genre sur la gauche. Puis, la simplicité du site leur ont permis de très vite comprendre les informations.
+Leur premier réflexe a été de jouer avec le changement de genre sur la gauche. Puis, la simplicité du site leur a permis de très vite comprendre les informations.
 
-Toutefois, la majorité n'ont pas compris qu'ils pouvaient cliquer sur les pays. Un message "Click for details !" a donc été rajouté dans la bulle et est retiré lorsque l'utilisateur a cliqué une fois sur un pays.
+Toutefois, la majorité n'a pas compris qu'ils pouvaient cliquer sur les pays. Un message "Click for details !" a donc été rajouté dans la bulle et est retiré lorsque l'utilisateur a cliqué une fois sur un pays.
 
 # Daltonisme
 La quantité exprimée sur la map n'est pas un problème pour les daltoniens, car exprimé en nuance de gris.
