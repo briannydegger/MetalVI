@@ -43,7 +43,6 @@ Malheureusement rien n'est jamais facile :). En effet, cette source de données 
 
 Autre source de données, [Rest Countries](http://restcountries.eu/) nous permet d'obtenir la population de chaque pays pour l'affichage relatif.
 
-
 # Technologies
 
 ![](http://vi.master.minelli.me/technologies.png)
@@ -57,6 +56,9 @@ Autre source de données, [Rest Countries](http://restcountries.eu/) nous permet
 - jQuery Datatables : Tableau de données interactif utilisé pour l'affichage de la liste des groupes d'un pays.
 - Popper.js : Gestionnaire de popup.
 
+## Carte du monde
+
+Pour le choix de l'outils pour la carte du monde, il a fallu en choissir une qui n'affiche pas les petits pays (comme Monaco ou le Liechtenstein, ou alors l'île Svalbard qui est inclut dans la Norvège). Car ceux ci, ayant une faible population, le rapport groupe / population est trop élevé par rapport aux autres.
 
 # Utilisabilité 
 ✓   |    Félicité (Bliss) 
@@ -98,6 +100,16 @@ Comme cette liste le montre, nous respectons 15 des 17 règles de l'utilisabilit
 Nous n'avons pas pu cocher le point sur la réversibilité, car il n'y a aucun acte qui ait besoin d'être défait.
 Quant aux points non respectés, celui sur l'erreur ne l'ait pas, car si un timeout a lieu lors du chargement de données rien n'ait fait pour le signaler à l'utilisateur ce qui le laisse dans l'attente des données qui n'arriveront pas. Pour le point "réalité", il n'est pas coché, car nous n'avons pas vraiment effectué de test utilisateur.
 
+# Tests utilisateurs
+
+Nous avons pu effectué des tests avec plusieurs personnes. Voici le contexte qui leur a été donné :
+
+*Vous vous intéressez aux différents genres de Metal et vous vous demandez dans quels pays se trouve le plus de groupe de vos deux genres préférés, qui sont le Power Metal et le Symphonique Metal. Après une recherche Google vous tombez sur ce site. Est-ce que les informations recherchées sont comprises facilement ?*
+
+Leur premier réflexe a été de jouer avec le changement de genre sur la gauche. Puis, la simplicité du site leur ont permis de très vite comprendre les informations.
+
+Toutefois, la majorité n'ont pas compris qu'ils pouvaient cliquer sur les pays. Un message "Click for details !" a donc été rajouté dans la bulle et est retiré lorsque l'utilisateur a cliqué une fois sur un pays.
+
 # Daltonisme
 La quantité exprimée sur la map n'est pas un problème pour les daltoniens, car exprimé en nuance de gris.
 
@@ -132,13 +144,10 @@ Achromatopsia - Vue monochromatique : Ne vois qu'en nuance de gris (Monochromacy
 - Gestion des erreurs de chargement des données
 - Pré-chargement dans notre propre base de données de plus d'informations afin de réduire le temps d'attente
 
-
-
-
 # Liens utiles
 
 *   [API non utilisée](http://em.wemakesites.net/)
-*   [Étude réalisée par Iain](http://www.degeneratestate.org/posts/2016/Apr/20/heavy-metal-and-natural-language-processing-part-1/)
+*   [Étude intéressante réalisée par Iain](http://www.degeneratestate.org/posts/2016/Apr/20/heavy-metal-and-natural-language-processing-part-1/)
 *   [Map jQuery](https://jqvmap.com/)
 *   [Map jQuery github](https://github.com/manifestinteractive/jqvmap)
 *   [API de population](https://restcountries.eu/)
