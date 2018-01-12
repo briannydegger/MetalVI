@@ -62,7 +62,8 @@ var countriesAbr = {
     'SG': 'Singapore',
     'SK': 'South Korea',
     'TW': 'Taiwan',
-    'UA': 'United Arab Emirates'
+    'UA': 'United Arab Emirates',
+    'RU': 'Russia'
 };
 
 function componentToHex(c) {

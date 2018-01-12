@@ -142,7 +142,6 @@ Achromatopsia - Vue monochromatique : Ne vois qu'en nuance de gris (Monochromacy
     - Distribution des genres
 - Ajout de statistiques au niveau mondial
 - Gestion des erreurs de chargement des données
-- Pré-chargement dans notre propre base de données de plus d'informations afin de réduire le temps d'attente
 
 # Liens utiles
 
