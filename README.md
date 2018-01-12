@@ -87,18 +87,18 @@ x    |    Échec (Failure)
 
 ✓   |    Automatisation (Automation)
 
-✓   |    Paramètres par défaut (Default)
+\-     |    Paramètres par défaut (Default)
 
 ✓   |    Respect
 
 ✓   |    Prévisibilité (Predictability)
 
-x    |    Réalité (Reality)
+✓   |    Réalité (Reality)
 
 Comme cette liste le montre, nous respectons 15 des 17 règles de l'utilisabilité.
 
-Nous n'avons pas pu cocher le point sur la réversibilité, car il n'y a aucun acte qui ait besoin d'être défait.
-Quant aux points non respectés, celui sur l'erreur ne l'ait pas, car si un timeout a lieu lors du chargement de données rien n'ait fait pour le signaler à l'utilisateur ce qui le laisse dans l'attente des données qui n'arriveront pas. Pour le point "réalité", il n'est pas coché, car nous n'avons pas vraiment effectué de test utilisateur.
+Nous n'avons pas pu cocher le point sur la réversibilité, car il n'y a aucun acte qui ait besoin d'être défait. Concernant les paramètres par défaut, il n'est que partiellement respecté, car des paramètres ou des états tel que le choix entre vue relative / absolue  ou l'infobulle disant de cliquer sur un pays (affiché qu'une seul fois) sont changeable, mais la valeur de ces paramètres / états n'est pas gardée entre les session. Un rafraichissement de la page entraine donc leur perte.
+Quant au point non respecté, l'echec ne l'ait pas, car si un timeout a lieu lors du chargement de données rien n'ait fait pour le signaler à l'utilisateur ce qui le laisse dans l'attente des données qui n'arriveront pas.
 
 # Tests utilisateurs
 
